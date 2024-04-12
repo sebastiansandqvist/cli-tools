@@ -2,6 +2,15 @@
 // https://user-images.githubusercontent.com/12821885/251197668-6d232fa0-f8ad-4cab-8a7a-24b3bb08b481.png
 // https://github.com/chalk/chalk/blob/main/source/vendor/ansi-styles/index.js
 
+// MAJOR TODO:
+// inputs need to be escaped so that they don't interfere with the ansi stuff
+
+function write(s: string) {
+  return new Promise((resolve) => {
+    process.stdout.write(s, resolve);
+  });
+}
+
 const RESET = 0;
 
 const mode = {
@@ -16,7 +25,15 @@ const mode = {
 } as const;
 
 const ansi = (code: number) => `\u001B[${code}m`;
-const wrap = ([open, close]: readonly [number, number], s: string) => `${ansi(open)}${s}${ansi(close)}`;
+
+// TODO: look for simplifications between this and wrapAnsi
+function wrap([open, close]: readonly [number, number], s: string) {
+  const closeRegex = new RegExp(`\\u001B\\[${close}m`, 'g');
+  const ansiOpen = ansi(open);
+  const ansiClose = ansi(close);
+  const escapedText = s.includes(ansiClose) ? s.replace(closeRegex, `${ansiClose}${ansiOpen}`) : s;
+  return `${ansiOpen}${escapedText}${ansiClose}`;
+}
 
 export const bold = (s: string) => wrap(mode.bold, s);
 export const dim = (s: string) => wrap(mode.dim, s);
@@ -130,32 +147,79 @@ export const bgBrightWhite = (s: string) => wrap([brightBg.white, RESET], s);
 console.log(`Hello, ${bgBrightBlack('world')} ${bgBrightRed('this')} ${bgBrightGreen('is')} ${bgBrightYellow('a')} ${bgBrightBlue('test')}.`);
 console.log(`Hello, ${bgBrightMagenta('world')} ${bgBrightCyan('this')} ${bgBrightWhite('is')} a test.`);
 
+function wrapAnsi(s: string, ansiOpen: string) {
+  const ansiClose = ansi(RESET);
+  const closeRegex = new RegExp(`\\u001B\\[${RESET}m`, 'g');
+  const escapedText = s.includes(ansiClose) ? s.replace(closeRegex, `${ansiClose}${ansiOpen}`) : s;
+  return `${ansiOpen}${escapedText}${ansiClose}`;
+}
+
 const ansiColor256 = (code: number) => `\u001B[38;5;${code}m`;
-export const color256 = (code: number) => (s: string) => `${ansiColor256(code)}${s}${ansi(RESET)}`;
+export const color256 = (code: number) => (s: string) => wrapAnsi(s, ansiColor256(code));
+// export const color256 = (code: number) => (s: string) => `${ansiColor256(code)}${s}${ansi(RESET)}`;
 
 (() => {
-  const input = 'Hello, world this is a test.';
-  for (let i = 0; i < input.length; i++) {
-    process.stdout.write(`${color256(i + 24)(input[i])}`);
+  for (let i = 0; i < 256; i++) {
+    process.stdout.write(`${color256(i)('▮')}`);
+    if ((i + 1) % 32 === 0) console.log();
   }
-  process.stdout.write('\n');
+  console.log();
 })();
 
 const ansiBg256 = (code: number) => `\u001B[48;5;${code}m`;
-export const bg256 = (code: number) => (s: string) => `${ansiBg256(code)}${s}${ansi(RESET)}`;
+export const bg256 = (code: number) => (s: string) => wrapAnsi(s, ansiBg256(code)); // `${ansiBg256(code)}${s}${ansi(RESET)}`;
+// export const bg256 = (code: number) => (s: string) => `${ansiBg256(code)}${s}${ansi(RESET)}`;
 
-(() => {
-  const input = 'Hello, world this is a test.';
-  for (let i = 0; i < input.length; i++) {
-    process.stdout.write(`${bg256(i + 24)(input[i])}`);
+const input = '12345678'.repeat(32);
+for (let i = 0; i < input.length; i++) {
+  await write(`${bg256(i)(input[i])}`);
+  if ((i + 1) % 32 === 0) console.log();
+}
+console.log();
+
+const ansiRgb = (r: number, g: number, b: number) => `\u001B[38;2;${r};${g};${b}m`;
+export const rgb = (r: number, g: number, b: number) => (s: string) => wrapAnsi(s, ansiRgb(r, g, b));
+// export const rgb = (r: number, g: number, b: number) => (s: string) => `${ansiRgb(r, g, b)}${s}${ansi(RESET)}`;
+
+const ansiBgRgb = (r: number, g: number, b: number) => `\u001B[48;2;${r};${g};${b}m`;
+export const bgRgb = (r: number, g: number, b: number) => (s: string) => wrapAnsi(s, ansiBgRgb(r, g, b));
+// export const bgRgb = (r: number, g: number, b: number) => (s: string) => `${ansiBgRgb(r, g, b)}${s}${ansi(RESET)}`;
+
+for (let i = 0; i < 256; i++) {
+  await write(`${bgRgb(256 - i, 256 - i, 256 - i)(rgb(i, i, i)('+'))}`);
+  if ((i + 1) % 32 === 0) console.log();
+}
+console.log();
+console.log();
+
+for (let i = 0; i < 256; i++) {
+  await write(`${rgb(50, 50, i)('▮')}`);
+  if ((i + 1) % 32 === 0) console.log();
+}
+console.log();
+console.log();
+for (let i = 0; i < 256; i++) {
+  await write(`${rgb(i, 50, 50)('▮')}`);
+  if ((i + 1) % 32 === 0) console.log();
+}
+console.log();
+console.log();
+for (let i = 0; i < 256; i++) {
+  await write(`${rgb(50, i, 50)('▮')}`);
+  if ((i + 1) % 32 === 0) console.log();
+}
+console.log();
+console.log();
+
+async () => {
+  let i = 0;
+  for (let r = 0; r < 255; r += 8) {
+    for (let g = 0; g < 255; g += 8) {
+      for (let b = 0; b < 255; b += 8) {
+        await write(`${bgRgb(255 - r, 255 - g, 255 - b)(rgb(r, g, b)('▮'))}`);
+        if (++i % 64 === 0) console.log();
+      }
+    }
   }
-  process.stdout.write('\n');
-})();
-
-export function colorRgb(r: number, g: number, b: number) {
-  return `ESC[38;2;${r};${g};${b}m`;
-}
-
-export function bgRgb(r: number, g: number, b: number) {
-  return `ESC[48;2;${r};${g};${b}m`;
-}
+  console.log();
+};
