@@ -1,20 +1,20 @@
 // https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
 // https://user-images.githubusercontent.com/12821885/251197668-6d232fa0-f8ad-4cab-8a7a-24b3bb08b481.png
 // https://github.com/chalk/chalk/blob/main/source/vendor/ansi-styles/index.js
+// https://github.com/lukeed/kleur/blob/master/colors.mjs
+// https://github.com/chalk/chalk?tab=readme-ov-file#256-and-truecolor-color-support
+// https://github.com/termstandard/colors
 
 import chalk from 'chalk';
 import kleur from 'kleur';
 
-// MAJOR TODO:
-// inputs need to be escaped so that they don't interfere with the ansi stuff
+// todo: support method chaining
 
 function write(s: string) {
   return new Promise((resolve) => {
     process.stdout.write(s, resolve);
   });
 }
-
-const RESET = 0;
 
 const mode = {
   bold: [1, 22], // according to Chalk, 21 isn't widely supported and 22 does the same thing
@@ -29,6 +29,8 @@ const mode = {
 } as const;
 
 const ansi = (code: number) => `\u001B[${code}m`;
+
+export const reset = () => ansi(0);
 
 function wrap([open, close]: readonly [number, number], s: string) {
   const ansiOpen = ansi(open);
@@ -161,6 +163,7 @@ export const bgBrightWhite = (s: string) => wrap([brightBg.white, bg.default], s
 console.log(`Hello, ${bgBrightBlack('world')} ${bgBrightRed('this')} ${bgBrightGreen('is')} ${bgBrightYellow('a')} ${bgBrightBlue('test')}.`);
 console.log(`Hello, ${bgBrightMagenta('world')} ${bgBrightCyan('this')} ${bgBrightWhite('is')} a test.`);
 
+// not all terminals support this
 const ansiColor256 = (code: number) => `\u001B[38;5;${code}m`;
 export const color256 = (code: number) => (s: string) => wrapAnsi(s, ansiColor256(code), ansi(color.default));
 
@@ -180,13 +183,12 @@ for (let i = 0; i < 256; i += 4) {
 }
 console.log();
 
+// not all terminals support this (truecolor)
 const ansiRgb = (r: number, g: number, b: number) => `\u001B[38;2;${r};${g};${b}m`;
 export const rgb = (r: number, g: number, b: number) => (s: string) => wrapAnsi(s, ansiRgb(r, g, b));
-// export const rgb = (r: number, g: number, b: number) => (s: string) => `${ansiRgb(r, g, b)}${s}${ansi(RESET)}`;
 
 const ansiBgRgb = (r: number, g: number, b: number) => `\u001B[48;2;${r};${g};${b}m`;
 export const bgRgb = (r: number, g: number, b: number) => (s: string) => wrapAnsi(s, ansiBgRgb(r, g, b));
-// export const bgRgb = (r: number, g: number, b: number) => (s: string) => `${ansiBgRgb(r, g, b)}${s}${ansi(RESET)}`;
 
 for (let i = 0; i < 256; i += 4) {
   await write(`${bgRgb(256 - i, 256 - i, 256 - i)(rgb(i, i, i)('▮'))}`);
