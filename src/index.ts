@@ -2,6 +2,9 @@
 // https://user-images.githubusercontent.com/12821885/251197668-6d232fa0-f8ad-4cab-8a7a-24b3bb08b481.png
 // https://github.com/chalk/chalk/blob/main/source/vendor/ansi-styles/index.js
 
+import chalk from 'chalk';
+import kleur from 'kleur';
+
 // MAJOR TODO:
 // inputs need to be escaped so that they don't interfere with the ansi stuff
 
@@ -14,7 +17,7 @@ function write(s: string) {
 const RESET = 0;
 
 const mode = {
-  bold: [1, 22],
+  bold: [1, 22], // according to Chalk, 21 isn't widely supported and 22 does the same thing
   dim: [2, 22],
   italic: [3, 23],
   underline: [4, 24],
@@ -22,16 +25,20 @@ const mode = {
   inverse: [7, 27],
   invisible: [8, 28],
   strike: [9, 29],
+  overline: [53, 55],
 } as const;
 
 const ansi = (code: number) => `\u001B[${code}m`;
 
-// TODO: look for simplifications between this and wrapAnsi
 function wrap([open, close]: readonly [number, number], s: string) {
-  const closeRegex = new RegExp(`\\u001B\\[${close}m`, 'g');
   const ansiOpen = ansi(open);
   const ansiClose = ansi(close);
-  const escapedText = s.includes(ansiClose) ? s.replace(closeRegex, `${ansiClose}${ansiOpen}`) : s;
+  const escapedText = s.replaceAll(ansiClose, `${ansiClose}${ansiOpen}`);
+  return `${ansiOpen}${escapedText}${ansiClose}`;
+}
+
+function wrapAnsi(s: string, ansiOpen: string, ansiClose: string) {
+  const escapedText = s.replaceAll(ansiClose, `${ansiClose}${ansiOpen}`);
   return `${ansiOpen}${escapedText}${ansiClose}`;
 }
 
@@ -65,19 +72,18 @@ const color = {
   default: 39,
 };
 
-export const black = (s: string) => wrap([color.black, RESET], s);
-export const red = (s: string) => wrap([color.red, RESET], s);
-export const green = (s: string) => wrap([color.green, RESET], s);
-export const yellow = (s: string) => wrap([color.yellow, RESET], s);
-export const blue = (s: string) => wrap([color.blue, RESET], s);
-export const magenta = (s: string) => wrap([color.magenta, RESET], s);
-export const cyan = (s: string) => wrap([color.cyan, RESET], s);
-export const white = (s: string) => wrap([color.white, RESET], s);
-export const defaultColor = (s: string) => wrap([color.default, RESET], s);
+export const black = (s: string) => wrap([color.black, color.default], s);
+export const red = (s: string) => wrap([color.red, color.default], s);
+export const green = (s: string) => wrap([color.green, color.default], s);
+export const yellow = (s: string) => wrap([color.yellow, color.default], s);
+export const blue = (s: string) => wrap([color.blue, color.default], s);
+export const magenta = (s: string) => wrap([color.magenta, color.default], s);
+export const cyan = (s: string) => wrap([color.cyan, color.default], s);
+export const white = (s: string) => wrap([color.white, color.default], s);
 
 console.log(`Hello, ${black('world')} ${red('this')} ${green('is')} ${yellow('a')} ${blue('test')}.`);
-console.log(`Hello, ${magenta('world')} ${cyan('this')} ${white('is')} ${defaultColor('a')} ${italic(blue('test'))}.`);
-[black, red, green, yellow, blue, magenta, cyan, white, defaultColor].forEach((fn) => {
+console.log(`Hello, ${magenta('world')} ${cyan('this')} ${white('is')} a ${italic(blue('test'))}.`);
+[black, red, green, yellow, blue, magenta, cyan, white].forEach((fn) => {
   console.log(fn(fn.name));
 });
 console.log();
@@ -94,18 +100,17 @@ const bg = {
   default: 49,
 };
 
-export const bgBlack = (s: string) => wrap([bg.black, RESET], s);
-export const bgRed = (s: string) => wrap([bg.red, RESET], s);
-export const bgGreen = (s: string) => wrap([bg.green, RESET], s);
-export const bgYellow = (s: string) => wrap([bg.yellow, RESET], s);
-export const bgBlue = (s: string) => wrap([bg.blue, RESET], s);
-export const bgMagenta = (s: string) => wrap([bg.magenta, RESET], s);
-export const bgCyan = (s: string) => wrap([bg.cyan, RESET], s);
-export const bgWhite = (s: string) => wrap([bg.white, RESET], s);
-export const bgDefaultColor = (s: string) => wrap([bg.default, RESET], s);
+export const bgBlack = (s: string) => wrap([bg.black, bg.default], s);
+export const bgRed = (s: string) => wrap([bg.red, bg.default], s);
+export const bgGreen = (s: string) => wrap([bg.green, bg.default], s);
+export const bgYellow = (s: string) => wrap([bg.yellow, bg.default], s);
+export const bgBlue = (s: string) => wrap([bg.blue, bg.default], s);
+export const bgMagenta = (s: string) => wrap([bg.magenta, bg.default], s);
+export const bgCyan = (s: string) => wrap([bg.cyan, bg.default], s);
+export const bgWhite = (s: string) => wrap([bg.white, bg.default], s);
 
 console.log(`Hello, ${bgBlack('world')} ${bgRed('this')} ${bgGreen('is')} ${bgYellow('a')} ${bgBlue('test')}.`);
-console.log(`Hello, ${bgMagenta('world')} ${bgCyan('this')} ${bgWhite('is')} ${bgDefaultColor('a')} ${italic(bgBlue('test'))}.`);
+console.log(`Hello, ${bgMagenta('world')} ${bgCyan('this')} ${bgWhite('is')} a ${italic(bgBlue('test'))}.`);
 console.log(`Hello, ${bgCyan(red('world'))} ${bgRed(blue('this'))} ${bgGreen(magenta('is'))} ${bgYellow(black('a'))} ${bgBlue(yellow(italic('test')))}.`);
 console.log();
 
@@ -120,14 +125,14 @@ const brightColor = {
   white: 97,
 };
 
-export const brightBlack = (s: string) => wrap([brightColor.black, RESET], s);
-export const brightRed = (s: string) => wrap([brightColor.red, RESET], s);
-export const brightGreen = (s: string) => wrap([brightColor.green, RESET], s);
-export const brightYellow = (s: string) => wrap([brightColor.yellow, RESET], s);
-export const brightBlue = (s: string) => wrap([brightColor.blue, RESET], s);
-export const brightMagenta = (s: string) => wrap([brightColor.magenta, RESET], s);
-export const brightCyan = (s: string) => wrap([brightColor.cyan, RESET], s);
-export const brightWhite = (s: string) => wrap([brightColor.white, RESET], s);
+export const brightBlack = (s: string) => wrap([brightColor.black, color.default], s);
+export const brightRed = (s: string) => wrap([brightColor.red, color.default], s);
+export const brightGreen = (s: string) => wrap([brightColor.green, color.default], s);
+export const brightYellow = (s: string) => wrap([brightColor.yellow, color.default], s);
+export const brightBlue = (s: string) => wrap([brightColor.blue, color.default], s);
+export const brightMagenta = (s: string) => wrap([brightColor.magenta, color.default], s);
+export const brightCyan = (s: string) => wrap([brightColor.cyan, color.default], s);
+export const brightWhite = (s: string) => wrap([brightColor.white, color.default], s);
 
 console.log(`Hello, ${brightBlack('world')} ${brightRed('this')} ${brightGreen('is')} ${brightYellow('a')} ${brightBlue('test')}.`);
 console.log(`Hello, ${brightMagenta('world')} ${brightCyan('this')} ${brightWhite('is')} a test.`);
@@ -144,28 +149,20 @@ const brightBg = {
   white: 107,
 };
 
-export const bgBrightBlack = (s: string) => wrap([brightBg.black, RESET], s);
-export const bgBrightRed = (s: string) => wrap([brightBg.red, RESET], s);
-export const bgBrightGreen = (s: string) => wrap([brightBg.green, RESET], s);
-export const bgBrightYellow = (s: string) => wrap([brightBg.yellow, RESET], s);
-export const bgBrightBlue = (s: string) => wrap([brightBg.blue, RESET], s);
-export const bgBrightMagenta = (s: string) => wrap([brightBg.magenta, RESET], s);
-export const bgBrightCyan = (s: string) => wrap([brightBg.cyan, RESET], s);
-export const bgBrightWhite = (s: string) => wrap([brightBg.white, RESET], s);
+export const bgBrightBlack = (s: string) => wrap([brightBg.black, bg.default], s);
+export const bgBrightRed = (s: string) => wrap([brightBg.red, bg.default], s);
+export const bgBrightGreen = (s: string) => wrap([brightBg.green, bg.default], s);
+export const bgBrightYellow = (s: string) => wrap([brightBg.yellow, bg.default], s);
+export const bgBrightBlue = (s: string) => wrap([brightBg.blue, bg.default], s);
+export const bgBrightMagenta = (s: string) => wrap([brightBg.magenta, bg.default], s);
+export const bgBrightCyan = (s: string) => wrap([brightBg.cyan, bg.default], s);
+export const bgBrightWhite = (s: string) => wrap([brightBg.white, bg.default], s);
 
 console.log(`Hello, ${bgBrightBlack('world')} ${bgBrightRed('this')} ${bgBrightGreen('is')} ${bgBrightYellow('a')} ${bgBrightBlue('test')}.`);
 console.log(`Hello, ${bgBrightMagenta('world')} ${bgBrightCyan('this')} ${bgBrightWhite('is')} a test.`);
 
-function wrapAnsi(s: string, ansiOpen: string) {
-  const ansiClose = ansi(RESET);
-  const closeRegex = new RegExp(`\\u001B\\[${RESET}m`, 'g');
-  const escapedText = s.includes(ansiClose) ? s.replace(closeRegex, `${ansiClose}${ansiOpen}`) : s;
-  return `${ansiOpen}${escapedText}${ansiClose}`;
-}
-
 const ansiColor256 = (code: number) => `\u001B[38;5;${code}m`;
-export const color256 = (code: number) => (s: string) => wrapAnsi(s, ansiColor256(code));
-// export const color256 = (code: number) => (s: string) => `${ansiColor256(code)}${s}${ansi(RESET)}`;
+export const color256 = (code: number) => (s: string) => wrapAnsi(s, ansiColor256(code), ansi(color.default));
 
 (() => {
   for (let i = 0; i < 256; i++) {
@@ -176,8 +173,7 @@ export const color256 = (code: number) => (s: string) => wrapAnsi(s, ansiColor25
 })();
 
 const ansiBg256 = (code: number) => `\u001B[48;5;${code}m`;
-export const bg256 = (code: number) => (s: string) => wrapAnsi(s, ansiBg256(code)); // `${ansiBg256(code)}${s}${ansi(RESET)}`;
-// export const bg256 = (code: number) => (s: string) => `${ansiBg256(code)}${s}${ansi(RESET)}`;
+export const bg256 = (code: number) => (s: string) => wrapAnsi(s, ansiBg256(code), ansi(bg.default));
 
 for (let i = 0; i < 256; i += 4) {
   await write(`${bg256(i)('▮')}`);
@@ -201,8 +197,25 @@ for (let i = 0; i < 256; i += 4) {
 }
 console.log();
 
-// nesting is broken because there are now two sequences that need to be reopened
-console.log(underline(red(`hello${ansi(RESET)} world!`)));
+// TODO: do we need to do this?
+// https://github.com/chalk/chalk/blob/main/source/utilities.js#L21
+console.log(red(`hi ${blue('there')} world!`));
+console.log(red(`hi ${blue('there')} world!`));
+console.log(red(`hi ${underline('there')} world!`));
+console.log();
+
+console.log('kleur');
+console.log(kleur.underline(kleur.red(`hello${ansi(mode.underline[1])} world!`)));
+console.log(kleur.red(kleur.underline(`hello${ansi(mode.underline[1])} world!`)));
+console.log(kleur.underline().blue(`hello${ansi(mode.underline[1])} world!\n`));
+console.log(kleur.red(`hi ${kleur.blue('there')} world`));
+console.log();
+
+console.log('chalk');
+console.log(chalk.underline(chalk.red(`hello${ansi(mode.underline[1])} world!`)));
+console.log(chalk.red(chalk.underline(`hello${ansi(mode.underline[1])} world!`)));
+console.log(chalk.blue.underline(`hello${ansi(mode.underline[1])} world!\n`));
+console.log(chalk.red(`hi ${chalk.blue('there')} world`));
 
 async () => {
   let i = 0;
