@@ -47,6 +47,12 @@ export const strike = (s: string) => wrap(mode.strike, s);
 console.log(`Hello, ${bold('world')} ${italic('this')} ${underline('is')} ${blink('a')} ${dim('test')}.`);
 console.log(`Hello, ${inverse('world')} ${invisible('this')} ${strike('is')} ${bold(italic(underline('a test')))}.`);
 
+[bold, dim, italic, underline, blink, inverse, invisible, strike].forEach((fn) => {
+  console.log(fn(fn.name));
+});
+
+console.log();
+
 const color = {
   black: 30,
   red: 31,
@@ -71,6 +77,9 @@ export const defaultColor = (s: string) => wrap([color.default, RESET], s);
 
 console.log(`Hello, ${black('world')} ${red('this')} ${green('is')} ${yellow('a')} ${blue('test')}.`);
 console.log(`Hello, ${magenta('world')} ${cyan('this')} ${white('is')} ${defaultColor('a')} ${italic(blue('test'))}.`);
+[black, red, green, yellow, blue, magenta, cyan, white, defaultColor].forEach((fn) => {
+  console.log(fn(fn.name));
+});
 console.log();
 
 const bg = {
@@ -161,7 +170,7 @@ export const color256 = (code: number) => (s: string) => wrapAnsi(s, ansiColor25
 (() => {
   for (let i = 0; i < 256; i++) {
     process.stdout.write(`${color256(i)('▮')}`);
-    if ((i + 1) % 32 === 0) console.log();
+    if ((i + 1) % 64 === 0) console.log();
   }
   console.log();
 })();
@@ -170,10 +179,8 @@ const ansiBg256 = (code: number) => `\u001B[48;5;${code}m`;
 export const bg256 = (code: number) => (s: string) => wrapAnsi(s, ansiBg256(code)); // `${ansiBg256(code)}${s}${ansi(RESET)}`;
 // export const bg256 = (code: number) => (s: string) => `${ansiBg256(code)}${s}${ansi(RESET)}`;
 
-const input = '12345678'.repeat(32);
-for (let i = 0; i < input.length; i++) {
-  await write(`${bg256(i)(input[i])}`);
-  if ((i + 1) % 32 === 0) console.log();
+for (let i = 0; i < 256; i += 4) {
+  await write(`${bg256(i)('▮')}`);
 }
 console.log();
 
@@ -185,31 +192,17 @@ const ansiBgRgb = (r: number, g: number, b: number) => `\u001B[48;2;${r};${g};${
 export const bgRgb = (r: number, g: number, b: number) => (s: string) => wrapAnsi(s, ansiBgRgb(r, g, b));
 // export const bgRgb = (r: number, g: number, b: number) => (s: string) => `${ansiBgRgb(r, g, b)}${s}${ansi(RESET)}`;
 
-for (let i = 0; i < 256; i++) {
-  await write(`${bgRgb(256 - i, 256 - i, 256 - i)(rgb(i, i, i)('+'))}`);
-  if ((i + 1) % 32 === 0) console.log();
+for (let i = 0; i < 256; i += 4) {
+  await write(`${bgRgb(256 - i, 256 - i, 256 - i)(rgb(i, i, i)('▮'))}`);
 }
 console.log();
+for (let i = 0; i < 256; i += 4) {
+  await write(`${rgb(50, i, 50)('▮')}`);
+}
 console.log();
 
-for (let i = 0; i < 256; i++) {
-  await write(`${rgb(50, 50, i)('▮')}`);
-  if ((i + 1) % 32 === 0) console.log();
-}
-console.log();
-console.log();
-for (let i = 0; i < 256; i++) {
-  await write(`${rgb(i, 50, 50)('▮')}`);
-  if ((i + 1) % 32 === 0) console.log();
-}
-console.log();
-console.log();
-for (let i = 0; i < 256; i++) {
-  await write(`${rgb(50, i, 50)('▮')}`);
-  if ((i + 1) % 32 === 0) console.log();
-}
-console.log();
-console.log();
+// nesting is broken because there are now two sequences that need to be reopened
+console.log(underline(red(`hello${ansi(RESET)} world!`)));
 
 async () => {
   let i = 0;
