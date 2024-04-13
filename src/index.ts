@@ -10,9 +10,15 @@ function write(s: string) {
   });
 }
 
-confirm('foo?');
-process.stdin.write(cmd.bell());
-console.log('beep');
+// confirm('foo?');
+// Bun.stdin.stream();
+console.log('\u0007');
+await write('\u0007');
+await write('boop ^  does not work?');
+await write(`\x1B[G`);
+await write('bee');
+await write('\x1B[3C!');
+console.log('\ndone');
 
 /*
 
