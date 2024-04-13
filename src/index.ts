@@ -5,11 +5,6 @@
 // https://github.com/chalk/chalk?tab=readme-ov-file#256-and-truecolor-color-support
 // https://github.com/termstandard/colors
 
-import chalk from 'chalk';
-import kleur from 'kleur';
-
-// todo: support method chaining
-
 function write(s: string) {
   return new Promise((resolve) => {
     process.stdout.write(s, resolve);
@@ -29,8 +24,7 @@ const mode = {
 } as const;
 
 const ansi = (code: number) => `\u001B[${code}m`;
-
-export const reset = () => ansi(0);
+// const reset = () => ansi(0);
 
 function wrap([open, close]: readonly [number, number], s: string) {
   const ansiOpen = ansi(open);
@@ -185,10 +179,10 @@ console.log();
 
 // not all terminals support this (truecolor)
 const ansiRgb = (r: number, g: number, b: number) => `\u001B[38;2;${r};${g};${b}m`;
-export const rgb = (r: number, g: number, b: number) => (s: string) => wrapAnsi(s, ansiRgb(r, g, b));
+export const rgb = (r: number, g: number, b: number) => (s: string) => wrapAnsi(s, ansiRgb(r, g, b), ansi(color.default));
 
 const ansiBgRgb = (r: number, g: number, b: number) => `\u001B[48;2;${r};${g};${b}m`;
-export const bgRgb = (r: number, g: number, b: number) => (s: string) => wrapAnsi(s, ansiBgRgb(r, g, b));
+export const bgRgb = (r: number, g: number, b: number) => (s: string) => wrapAnsi(s, ansiBgRgb(r, g, b), ansi(bg.default));
 
 for (let i = 0; i < 256; i += 4) {
   await write(`${bgRgb(256 - i, 256 - i, 256 - i)(rgb(i, i, i)('▮'))}`);
@@ -205,29 +199,3 @@ console.log(red(`hi ${blue('there')} world!`));
 console.log(red(`hi ${blue('there')} world!`));
 console.log(red(`hi ${underline('there')} world!`));
 console.log();
-
-console.log('kleur');
-console.log(kleur.underline(kleur.red(`hello${ansi(mode.underline[1])} world!`)));
-console.log(kleur.red(kleur.underline(`hello${ansi(mode.underline[1])} world!`)));
-console.log(kleur.underline().blue(`hello${ansi(mode.underline[1])} world!\n`));
-console.log(kleur.red(`hi ${kleur.blue('there')} world`));
-console.log();
-
-console.log('chalk');
-console.log(chalk.underline(chalk.red(`hello${ansi(mode.underline[1])} world!`)));
-console.log(chalk.red(chalk.underline(`hello${ansi(mode.underline[1])} world!`)));
-console.log(chalk.blue.underline(`hello${ansi(mode.underline[1])} world!\n`));
-console.log(chalk.red(`hi ${chalk.blue('there')} world`));
-
-async () => {
-  let i = 0;
-  for (let r = 0; r < 255; r += 8) {
-    for (let g = 0; g < 255; g += 8) {
-      for (let b = 0; b < 255; b += 8) {
-        await write(`${bgRgb(255 - r, 255 - g, 255 - b)(rgb(r, g, b)('▮'))}`);
-        if (++i % 64 === 0) console.log();
-      }
-    }
-  }
-  console.log();
-};
