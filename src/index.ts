@@ -4,6 +4,25 @@
 // https://github.com/lukeed/kleur/blob/master/colors.mjs
 // https://github.com/chalk/chalk?tab=readme-ov-file#256-and-truecolor-color-support
 // https://github.com/termstandard/colors
+// https://www.npmjs.com/package/sisteransi
+
+/*
+
+checkbox
+plain input
+radio
+button
+loading spinner
+progress bar?
+
+input({
+  value,
+  type,
+  ...
+  onInput() {}
+})
+const response: 'a' | 'b' | 'c' = await select(['c', 'b', 'a']);
+*/
 
 function write(s: string) {
   return new Promise((resolve) => {
@@ -22,6 +41,8 @@ const mode = {
   strike: [9, 29],
   overline: [53, 55],
 } as const;
+
+// console.log('\u001B[3mhello!!!!\u001B[23m');
 
 const ansi = (code: number) => `\u001B[${code}m`;
 // const reset = () => ansi(0);
@@ -47,14 +68,14 @@ export const inverse = (s: string) => wrap(mode.inverse, s);
 export const invisible = (s: string) => wrap(mode.invisible, s);
 export const strike = (s: string) => wrap(mode.strike, s);
 
-console.log(`Hello, ${bold('world')} ${italic('this')} ${underline('is')} ${blink('a')} ${dim('test')}.`);
-console.log(`Hello, ${inverse('world')} ${invisible('this')} ${strike('is')} ${bold(italic(underline('a test')))}.`);
+// console.log(`Hello, ${bold('world')} ${italic('this')} ${underline('is')} ${blink('a')} ${dim('test')}.`);
+// console.log(`Hello, ${inverse('world')} ${invisible('this')} ${strike('is')} ${bold(italic(underline('a test')))}.`);
 
 [bold, dim, italic, underline, blink, inverse, invisible, strike].forEach((fn) => {
-  console.log(fn(fn.name));
+  // console.log(fn(fn.name));
 });
 
-console.log();
+// console.log();
 
 const color = {
   black: 30,
@@ -77,12 +98,13 @@ export const magenta = (s: string) => wrap([color.magenta, color.default], s);
 export const cyan = (s: string) => wrap([color.cyan, color.default], s);
 export const white = (s: string) => wrap([color.white, color.default], s);
 
-console.log(`Hello, ${black('world')} ${red('this')} ${green('is')} ${yellow('a')} ${blue('test')}.`);
-console.log(`Hello, ${magenta('world')} ${cyan('this')} ${white('is')} a ${italic(blue('test'))}.`);
-[black, red, green, yellow, blue, magenta, cyan, white].forEach((fn) => {
-  console.log(fn(fn.name));
-});
-console.log();
+console.log(red(`hello ${cyan('hi')} world`).split(''));
+// console.log(`Hello, ${black('world')} ${red('this')} ${green('is')} ${yellow('a')} ${blue('test')}.`);
+// console.log(`Hello, ${magenta('world')} ${cyan('this')} ${white('is')} a ${italic(blue('test'))}.`);
+// [black, red, green, yellow, blue, magenta, cyan, white].forEach((fn) => {
+//   console.log(fn(fn.name));
+// });
+// console.log();
 
 const bg = {
   black: 40,
@@ -105,10 +127,10 @@ export const bgMagenta = (s: string) => wrap([bg.magenta, bg.default], s);
 export const bgCyan = (s: string) => wrap([bg.cyan, bg.default], s);
 export const bgWhite = (s: string) => wrap([bg.white, bg.default], s);
 
-console.log(`Hello, ${bgBlack('world')} ${bgRed('this')} ${bgGreen('is')} ${bgYellow('a')} ${bgBlue('test')}.`);
-console.log(`Hello, ${bgMagenta('world')} ${bgCyan('this')} ${bgWhite('is')} a ${italic(bgBlue('test'))}.`);
-console.log(`Hello, ${bgCyan(red('world'))} ${bgRed(blue('this'))} ${bgGreen(magenta('is'))} ${bgYellow(black('a'))} ${bgBlue(yellow(italic('test')))}.`);
-console.log();
+// console.log(`Hello, ${bgBlack('world')} ${bgRed('this')} ${bgGreen('is')} ${bgYellow('a')} ${bgBlue('test')}.`);
+// console.log(`Hello, ${bgMagenta('world')} ${bgCyan('this')} ${bgWhite('is')} a ${italic(bgBlue('test'))}.`);
+// console.log(`Hello, ${bgCyan(red('world'))} ${bgRed(blue('this'))} ${bgGreen(magenta('is'))} ${bgYellow(black('a'))} ${bgBlue(yellow(italic('test')))}.`);
+// console.log();
 
 const brightColor = {
   black: 90,
@@ -130,9 +152,9 @@ export const brightMagenta = (s: string) => wrap([brightColor.magenta, color.def
 export const brightCyan = (s: string) => wrap([brightColor.cyan, color.default], s);
 export const brightWhite = (s: string) => wrap([brightColor.white, color.default], s);
 
-console.log(`Hello, ${brightBlack('world')} ${brightRed('this')} ${brightGreen('is')} ${brightYellow('a')} ${brightBlue('test')}.`);
-console.log(`Hello, ${brightMagenta('world')} ${brightCyan('this')} ${brightWhite('is')} a test.`);
-console.log();
+// console.log(`Hello, ${brightBlack('world')} ${brightRed('this')} ${brightGreen('is')} ${brightYellow('a')} ${brightBlue('test')}.`);
+// console.log(`Hello, ${brightMagenta('world')} ${brightCyan('this')} ${brightWhite('is')} a test.`);
+// console.log();
 
 const brightBg = {
   black: 100,
@@ -154,28 +176,28 @@ export const bgBrightMagenta = (s: string) => wrap([brightBg.magenta, bg.default
 export const bgBrightCyan = (s: string) => wrap([brightBg.cyan, bg.default], s);
 export const bgBrightWhite = (s: string) => wrap([brightBg.white, bg.default], s);
 
-console.log(`Hello, ${bgBrightBlack('world')} ${bgBrightRed('this')} ${bgBrightGreen('is')} ${bgBrightYellow('a')} ${bgBrightBlue('test')}.`);
-console.log(`Hello, ${bgBrightMagenta('world')} ${bgBrightCyan('this')} ${bgBrightWhite('is')} a test.`);
+// console.log(`Hello, ${bgBrightBlack('world')} ${bgBrightRed('this')} ${bgBrightGreen('is')} ${bgBrightYellow('a')} ${bgBrightBlue('test')}.`);
+// console.log(`Hello, ${bgBrightMagenta('world')} ${bgBrightCyan('this')} ${bgBrightWhite('is')} a test.`);
 
 // not all terminals support this
 const ansiColor256 = (code: number) => `\u001B[38;5;${code}m`;
 export const color256 = (code: number) => (s: string) => wrapAnsi(s, ansiColor256(code), ansi(color.default));
 
-(() => {
-  for (let i = 0; i < 256; i++) {
-    process.stdout.write(`${color256(i)('▮')}`);
-    if ((i + 1) % 64 === 0) console.log();
-  }
-  console.log();
-})();
+// (() => {
+//   for (let i = 0; i < 256; i++) {
+//     process.stdout.write(`${color256(i)('▮')}`);
+//     if ((i + 1) % 64 === 0) console.log();
+//   }
+//   // console.log();
+// })();
 
 const ansiBg256 = (code: number) => `\u001B[48;5;${code}m`;
 export const bg256 = (code: number) => (s: string) => wrapAnsi(s, ansiBg256(code), ansi(bg.default));
 
-for (let i = 0; i < 256; i += 4) {
-  await write(`${bg256(i)('▮')}`);
-}
-console.log();
+// for (let i = 0; i < 256; i += 4) {
+//   await write(`${bg256(i)('▮')}`);
+// }
+// console.log();
 
 // not all terminals support this (truecolor)
 const ansiRgb = (r: number, g: number, b: number) => `\u001B[38;2;${r};${g};${b}m`;
@@ -184,18 +206,22 @@ export const rgb = (r: number, g: number, b: number) => (s: string) => wrapAnsi(
 const ansiBgRgb = (r: number, g: number, b: number) => `\u001B[48;2;${r};${g};${b}m`;
 export const bgRgb = (r: number, g: number, b: number) => (s: string) => wrapAnsi(s, ansiBgRgb(r, g, b), ansi(bg.default));
 
-for (let i = 0; i < 256; i += 4) {
-  await write(`${bgRgb(256 - i, 256 - i, 256 - i)(rgb(i, i, i)('▮'))}`);
-}
-console.log();
-for (let i = 0; i < 256; i += 4) {
-  await write(`${rgb(50, i, 50)('▮')}`);
-}
-console.log();
+// for (let i = 0; i < 256; i += 4) {
+//   await write(`${bgRgb(256 - i, 256 - i, 256 - i)(rgb(i, i, i)('▮'))}`);
+// }
+// console.log();
+// for (let i = 0; i < 256 * 4; i++) {
+//   // await write(`${rgb(50, i, 50)('▮')}`);
+//   await write(`${rgb(50, i, 50)('▮')}`);
+//   if ((i + 1) % 64 === 0) {
+//     await write('\n');
+//   }
+// }
+// console.log();
 
 // TODO: do we need to do this?
 // https://github.com/chalk/chalk/blob/main/source/utilities.js#L21
-console.log(red(`hi ${blue('there')} world!`));
-console.log(red(`hi ${blue('there')} world!`));
-console.log(red(`hi ${underline('there')} world!`));
-console.log();
+// console.log(red(`hi ${blue('there')} world!`));
+// console.log(red(`hi ${blue('there')} world!`));
+// console.log(red(`hi ${underline('there')} world!`));
+// console.log();
